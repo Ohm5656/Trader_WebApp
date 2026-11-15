@@ -1,0 +1,26 @@
+{
+  "browser": {
+    "mode": "launch",
+    "executable_path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "headless": true
+  },
+  "start_url": {
+    "url": "https://app.pnlledger.com/"
+  },
+  "environment": {
+    "viewport": { "width": 390, "height": 844, "device_scale_factor": 1 },
+    "locale": "en-US",
+    "timezone": "UTC",
+    "color_scheme": "dark",
+    "reduced_motion": "reduce",
+    "service_workers": "allow"
+  },
+  "actions": [
+    { "step_id": "settle-public-home", "action": "wait_for_timeout", "duration_ms": 1500 }
+  ],
+  "capture": {
+    "at_end": ["url", "dom", "accessibility", "screenshot"],
+    "events": ["console", "page-errors", "network"],
+    "network": { "request_body": false, "response_body": false, "header_values": false }
+  }
+}

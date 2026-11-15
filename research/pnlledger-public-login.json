@@ -1,0 +1,33 @@
+{
+  "browser": {
+    "mode": "launch",
+    "executable_path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "headless": true
+  },
+  "start_url": {
+    "url": "https://app.pnlledger.com/welcome"
+  },
+  "environment": {
+    "viewport": { "width": 390, "height": 844, "device_scale_factor": 1 },
+    "locale": "en-US",
+    "timezone": "UTC",
+    "color_scheme": "dark",
+    "reduced_motion": "reduce",
+    "service_workers": "allow"
+  },
+  "actions": [
+    {
+      "step_id": "open-login",
+      "action": "click",
+      "locator": { "kind": "role", "role": "button", "name": "Login" },
+      "timeout_ms": 10000
+    },
+    { "step_id": "settle-login", "action": "wait_for_timeout", "duration_ms": 1000 }
+  ],
+  "capture": {
+    "after_each_step": ["url", "accessibility", "screenshot"],
+    "at_end": ["url", "dom", "accessibility", "screenshot"],
+    "events": ["console", "page-errors"],
+    "network": { "request_body": false, "response_body": false, "header_values": false }
+  }
+}
