@@ -1,52 +1,44 @@
 # Tradeboard
 
-Tradeboard is a focused, browser-first trading journal for recording daily P&L, spotting performance patterns, and reflecting on execution. It is an original web interface inspired by the workflow of a calendar-based trading journal—not a copy of a third-party application or brand.
+Tradeboard is an original, browser-first trading journal. It makes daily P&L review feel like a focused product workflow: log a day, see the calendar state, and inspect the pattern behind the result.
 
-![Tradeboard journal calendar](assets/tradeboard-journal.png)
+![Tradeboard calendar on desktop](assets/tradeboard-calendar-desktop.png)
 
-## Why Tradeboard
+## What you get
 
-Many traders know their P&L but lose the context behind it. Tradeboard puts the important information in one calm workspace:
+- A calendar-first journal with positive, negative, empty, and selected daily states.
+- Week, month, year, and all-time views with date navigation.
+- Local trade-entry flow with P&L, trade count, setup, and reflection fields.
+- Performance review: profit/loss split, win rate, profit factor, expectancy, and quick stats.
+- Privacy mode, trade-count control, weekday-only option, goal editing, demo restore, and JSON export.
+- Responsive navigation: desktop icon rail and a compact mobile bottom bar.
 
-- Log a trading day with P&L, trade count, setup, and reflection.
-- See profitable and losing days instantly in a calendar.
-- Switch between week, month, year, and all-time performance views.
-- Use win rate, profit factor, expectancy, and daily P&L to review habits—not just results.
-- Keep data private in the browser and export it as JSON whenever needed.
+## Benefits
 
-## Features
+Tradeboard keeps the review loop short. The calendar exposes consistency at a glance, local persistence lets a user try the workflow without an account, and JSON export keeps journal data portable. The analytics are designed to turn daily outcomes into actionable review prompts rather than financial advice.
 
-| Area | Included capability |
-| --- | --- |
-| Journal | Add, replace, and review daily trading entries with notes and setup tags. |
-| Calendar | Week, month, year, and all-time perspectives with positive/negative P&L states. |
-| Analytics | Net P&L, expectancy, win rate, profit factor, and a compact daily P&L chart. |
-| Preferences | Toggle trade counts, weekday-only calendar view, and P&L privacy blur. |
-| Data ownership | Local browser storage and a one-click JSON export. |
-| Responsive UI | Purpose-built desktop workspace and compact mobile navigation. |
+## Tech stack
 
-## Tech Stack
-
-- **HTML5** for accessible document structure and native dialogs.
-- **CSS3** for a responsive, dark trading dashboard, fluid layouts, and visual states.
-- **Vanilla JavaScript (ES2022)** for journal state, local persistence, calculations, and UI interactions.
-- **localStorage** for browser-local persistence—no account or server is required to try the prototype.
-- **Playwright/Chrome** for local visual verification and the README screenshot.
+| Layer | Technology | Purpose |
+| --- | --- | --- |
+| UI | HTML5 | Semantic structure, accessible controls, and native dialog. |
+| Styling | CSS3 | Responsive desktop/mobile layouts, visual states, and dark product UI. |
+| Application | Vanilla JavaScript (ES2022) | State, calculations, navigation, rendering, and interactions. |
+| Persistence | `localStorage` | Browser-local journal data and preferences. |
+| Verification | Node syntax check + Playwright/Chrome screenshot | Fast implementation checks and visual review. |
 
 ## Run locally
 
-Prerequisites: Node.js 22+.
+Requirements: Node.js 22+.
 
 ```bash
 npm run check
 npm start
 ```
 
-Then visit [http://localhost:4173](http://localhost:4173).
+Open the local URL printed by `serve`.
 
-## Data model
-
-Each journal entry is stored locally with the following shape:
+## Local data model
 
 ```json
 {
@@ -58,18 +50,15 @@ Each journal entry is stored locally with the following shape:
 }
 ```
 
-## Roadmap
+## Project boundaries
 
-- Supabase authentication and per-user cloud sync.
-- Multiple trading accounts and currencies.
-- CSV broker import and richer trade-level metrics.
-- Data import, server-side exports, and PDF reports.
-- Automated tests for calculation and calendar edge cases.
+Tradeboard is an independent implementation. Its product direction was informed by high-level, user-authorized REA observations recorded in [docs/REA_AUTH_FINDINGS.md](docs/REA_AUTH_FINDINGS.md); it does not include third-party code, credentials, data, screenshots, or brand assets.
 
-## Verification
+## Next steps
 
-`npm run check` validates the application JavaScript syntax. The current UI was additionally served locally and visually inspected in Chrome at desktop size.
+- Optional cloud sync and sign-in.
+- Multiple accounts and currencies.
+- CSV imports and broker-specific reporting.
+- Automated browser interaction tests.
 
----
-
-Built as an original educational trading-journal prototype. Trading metrics are for review and record-keeping only; they are not financial advice.
+Trading metrics are for review and record-keeping only, not financial advice.

@@ -3,63 +3,69 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#07100d" />
-    <meta name="description" content="Tradeboard is a private, browser-first trading performance journal." />
+    <meta name="theme-color" content="#050607" />
+    <meta name="description" content="Tradeboard is a private, browser-first trading journal." />
     <title>Tradeboard — Trading Journal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="app-shell">
-      <header class="topbar">
-        <a class="brand" href="#" aria-label="Tradeboard home"><span class="brand-mark">T</span><span>tradeboard</span></a>
-        <div class="top-actions"><button class="icon-button" id="theme-button" aria-label="Toggle theme">◐</button><button class="avatar" aria-label="Account menu">OL</button></div>
-      </header>
+    <div class="app-shell">
+      <aside class="rail" aria-label="Primary navigation">
+        <a class="app-mark" href="#" aria-label="Tradeboard home"><span></span><i></i><i></i><i></i><i></i></a>
+        <nav class="rail-nav">
+          <button class="rail-button active" data-page="calendar" aria-label="Calendar"><span aria-hidden="true">⠿</span><b>Calendar</b></button>
+          <button class="rail-button" data-page="analytics" aria-label="Analytics"><span aria-hidden="true">⌁</span><b>Analytics</b></button>
+          <button class="rail-button" data-page="settings" aria-label="Settings"><span aria-hidden="true">⚙</span><b>Settings</b></button>
+        </nav>
+        <div class="rail-footer"><button class="rail-button" id="export-rail" aria-label="Export journal"><span aria-hidden="true">⇩</span><b>Export</b></button></div>
+      </aside>
 
-      <section class="app-layout">
-        <aside class="sidebar" aria-label="Main navigation">
-          <button class="nav-item active" data-page="calendar"><span>▦</span> Journal</button>
-          <button class="nav-item" data-page="analytics"><span>⌁</span> Analytics</button>
-          <button class="nav-item" data-page="settings"><span>⚙</span> Settings</button>
-          <div class="sidebar-bottom"><p class="eyebrow">CURRENT ACCOUNT</p><button class="account-switcher"><span class="account-dot"></span><span>Main Account<br><small>USD · Futures</small></span><b>⌄</b></button></div>
-        </aside>
+      <main class="workspace">
+        <header class="workspace-header">
+          <div class="identity"><span class="identity-kicker">PRIVATE TRADING JOURNAL</span><strong>Tradeboard</strong></div>
+          <div class="header-actions"><button class="account-control" type="button">Main account <span>⌄</span></button><button class="add-button" id="open-trade-modal" type="button">+ Add entry</button></div>
+        </header>
 
-        <div class="workspace">
-          <section id="calendar-page" class="page active-page">
-            <div class="page-heading"><div><p class="eyebrow">YOUR TRADING JOURNAL</p><h1>Performance, one day at a time.</h1><p class="muted">Review your execution, protect your focus, and build a better process.</p></div><button class="primary-button" id="open-trade-modal">＋ Add trade</button></div>
-            <section class="summary-strip">
-              <article class="summary-card"><span>This month</span><strong id="month-total">+$195.35</strong><small id="month-trades">4 trading days</small></article>
-              <article class="summary-card"><span>Monthly goal</span><strong class="goal-copy">19.5%</strong><div class="progress-track"><i id="goal-progress"></i></div><small>$195.35 of $1,000</small></article>
-              <article class="summary-card"><span>Best day</span><strong id="best-day">+$95.65</strong><small>Tuesday, Nov 10</small></article>
-            </section>
-            <section class="journal-panel">
-              <div class="journal-toolbar"><div class="view-tabs" role="tablist"><button class="view-tab active" data-view="week">Week</button><button class="view-tab" data-view="month">Month</button><button class="view-tab" data-view="year">Year</button><button class="view-tab" data-view="all">All time</button></div><button class="account-filter">Main Account <span>⌄</span></button></div>
-              <div class="calendar-controls"><button class="chevron" id="previous-period" aria-label="Previous period">‹</button><h2 id="period-title">November 2026</h2><button class="chevron" id="next-period" aria-label="Next period">›</button></div>
-              <div id="calendar-content"></div>
-            </section>
+        <section class="page active-page" id="calendar-page" aria-label="Calendar">
+          <div class="scope-tabs" role="tablist" aria-label="Calendar timeframe">
+            <button class="view-tab active" role="tab" aria-selected="true" data-view="week">Week</button>
+            <button class="view-tab" role="tab" aria-selected="false" data-view="month">Month</button>
+            <button class="view-tab" role="tab" aria-selected="false" data-view="year">Year</button>
+            <button class="view-tab" role="tab" aria-selected="false" data-view="all">All time</button>
+          </div>
+
+          <div class="period-row"><button class="period-arrow" id="previous-period" type="button" aria-label="Previous period">‹</button><h1 id="period-title">November 2026</h1><button class="period-arrow" id="next-period" type="button" aria-label="Next period">›</button></div>
+          <section class="calendar-summary" aria-label="Current period summary">
+            <article class="stat-card"><span>Total P&amp;L</span><strong id="month-total">$195.35</strong><small id="month-trades">4 trading days</small></article>
+            <article class="goal-card"><div><span id="goal-label">Monthly goal</span><button id="edit-goal" type="button" aria-label="Edit goal">↗</button></div><div class="progress-track"><i id="goal-progress"></i></div><div class="goal-values"><b id="goal-current">$195.35</b><b id="goal-target">$1,000.00</b></div></article>
           </section>
+          <div class="calendar-filters"><button id="weekends-toggle-button" type="button">Weekends: <b>ON</b> <span>⌄</span></button><button class="account-control" type="button">Main account <span>⌄</span></button></div>
+          <section id="calendar-content" class="calendar-content" aria-live="polite"></section>
+        </section>
 
-          <section id="analytics-page" class="page">
-            <div class="page-heading"><div><p class="eyebrow">DECISION SUPPORT</p><h1>See the pattern behind the P&amp;L.</h1><p class="muted">Metrics are based on the trading days saved in this journal.</p></div><select class="select-control" id="analytics-range"><option value="month">This month</option><option value="all">All time</option></select></div>
-            <section id="analytics-content"></section>
-          </section>
+        <section class="page" id="analytics-page" aria-label="Analytics">
+          <div class="analytics-toolbar"><button class="account-control" type="button">Main account <span>⌄</span></button><button id="analytics-range" class="account-control" type="button">This month <span>⌄</span></button></div>
+          <button class="drawdown-card" type="button"><span class="drawdown-shape" aria-hidden="true">⌁</span><strong>Drawdown chart</strong><small>Last 30 sessions</small><b>See chart →</b></button>
+          <section id="analytics-content"></section>
+        </section>
 
-          <section id="settings-page" class="page">
-            <div class="page-heading"><div><p class="eyebrow">PREFERENCES</p><h1>Make the journal yours.</h1><p class="muted">Your data stays in this browser unless you export it.</p></div></div>
-            <div class="settings-grid">
-              <section class="settings-card"><h2>Journal preferences</h2><label class="setting-row"><span><b>Show trade count</b><small>Show the number of trades on calendar days.</small></span><input id="trade-count-toggle" type="checkbox" checked /></label><label class="setting-row"><span><b>Include weekends</b><small>Display Saturday and Sunday in the monthly grid.</small></span><input id="weekends-toggle" type="checkbox" checked /></label><label class="setting-row"><span><b>Privacy mode</b><small>Blur P&amp;L values when you need discretion.</small></span><input id="privacy-toggle" type="checkbox" /></label></section>
-              <section class="settings-card"><h2>Data</h2><button class="settings-action" id="export-json">Export journal data <span>↓</span></button><button class="settings-action" id="reset-demo">Restore demo journal <span>↺</span></button><p class="settings-note">Exports are JSON files and can be re-imported in a future version.</p></section>
-            </div>
-          </section>
-        </div>
-      </section>
-    </main>
+        <section class="page" id="settings-page" aria-label="Settings">
+          <div class="settings-heading"><h1>Settings</h1><p>Edit your journal preferences and manage local data.</p></div>
+          <div class="settings-stack">
+            <section class="settings-panel"><h2>General</h2><label class="setting-row"><span><b>Show number of trades</b><small>Show daily trade count in calendar views.</small></span><input id="trade-count-toggle" type="checkbox" checked /></label><label class="setting-row"><span><b>Hide P&amp;L for privacy</b><small>Blur results while keeping the journal usable.</small></span><input id="privacy-toggle" type="checkbox" /></label></section>
+            <section class="settings-panel"><h2>Data</h2><button class="settings-action" id="export-json" type="button"><span>Export journal data</span><b>⇩</b></button><button class="settings-action" id="reset-demo" type="button"><span>Restore demo journal</span><b>↺</b></button></section>
+            <section class="settings-panel account-panel"><h2>Account</h2><button class="settings-action" type="button"><span>Trading account</span><b>Main account</b></button><button class="settings-action danger" type="button" id="clear-local-data"><span>Clear local journal</span><b>×</b></button></section>
+          </div>
+        </section>
+      </main>
+    </div>
 
-    <nav class="mobile-nav" aria-label="Mobile navigation"><button class="nav-item active" data-page="calendar"><span>▦</span><small>Journal</small></button><button class="nav-item" data-page="analytics"><span>⌁</span><small>Analytics</small></button><button class="mobile-add" id="mobile-add" aria-label="Add trade">＋</button><button class="nav-item" data-page="settings"><span>⚙</span><small>Settings</small></button></nav>
+    <nav class="mobile-nav" aria-label="Mobile navigation"><button class="mobile-nav-item active" data-page="calendar"><span>▦</span>Calendar</button><button class="mobile-nav-item" data-page="analytics"><span>⌁</span>Analytics</button><button class="mobile-nav-item" data-page="settings"><span>⚙</span>Settings</button></nav>
 
-    <dialog id="trade-modal"><form method="dialog" id="trade-form"><div class="modal-header"><div><p class="eyebrow">NEW JOURNAL ENTRY</p><h2>Add a trading day</h2></div><button class="close-modal" value="cancel" aria-label="Close">×</button></div><div class="form-grid"><label>Date<input id="trade-date" name="date" type="date" required /></label><label>Net P&amp;L<input id="trade-pnl" name="pnl" type="number" step="0.01" placeholder="e.g. 125.50" required /></label><label>Number of trades<input id="trade-count" name="count" type="number" min="1" value="1" required /></label><label>Setup / playbook<input id="trade-tag" name="tag" type="text" placeholder="e.g. Opening range" /></label><label class="form-full">Reflection<textarea id="trade-note" name="note" rows="3" placeholder="What went well? What will you repeat or change?"></textarea></label></div><div class="modal-actions"><button value="cancel" class="secondary-button">Cancel</button><button value="default" class="primary-button">Save entry</button></div></form></dialog>
+    <dialog id="trade-modal"><form method="dialog" id="trade-form"><div class="modal-header"><div><p>NEW JOURNAL ENTRY</p><h2>Add a trading day</h2></div><button class="close-modal" value="cancel" aria-label="Close">×</button></div><div class="form-grid"><label>Date<input id="trade-date" name="date" type="date" required /></label><label>Net P&amp;L<input id="trade-pnl" name="pnl" type="number" step="0.01" placeholder="e.g. 125.50" required /></label><label>Number of trades<input id="trade-count" name="count" type="number" min="1" value="1" required /></label><label>Setup / playbook<input id="trade-tag" name="tag" type="text" placeholder="e.g. Opening range" /></label><label class="form-full">Reflection<textarea id="trade-note" name="note" rows="3" placeholder="What will you repeat or change?"></textarea></label></div><div class="modal-actions"><button value="cancel" class="secondary-button">Cancel</button><button value="default" class="add-button">Save entry</button></div></form></dialog>
     <div id="toast" role="status" aria-live="polite"></div>
     <script src="app.js"></script>
   </body>
