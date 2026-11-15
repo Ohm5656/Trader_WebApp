@@ -27,16 +27,16 @@ Tradeboard keeps the review loop short. The calendar exposes consistency at a gl
 | Persistence | `localStorage` | Browser-local journal data and preferences. |
 | Verification | Node syntax check + Playwright/Chrome screenshot | Fast implementation checks and visual review. |
 
-## Firebase cloud sync and image storage
+## Firebase cloud sync and local images
 
-The app runs local-first until Firebase is configured. With Firebase enabled, users can sign in with Google, migrate their local journal to Cloud Firestore, and upload compressed trade screenshots to Cloud Storage.
+The app runs local-first until Firebase is configured. With Firebase enabled, users can sign in with Google and migrate their journal to Cloud Firestore. Trade screenshots are compressed and stored in IndexedDB on the current browser, so image attachment works without a billing account.
 
 1. Copy `.env.example` to `.env.local` and add the Firebase web-app values.
 2. Enable **Google** in Firebase Authentication > Sign-in method.
-3. Create the default Cloud Firestore database and Cloud Storage bucket, then deploy the included owner-only rules.
+3. Create the default Cloud Firestore database, then deploy the included owner-only rules.
 4. Use `npm run build` and `firebase deploy` to publish.
 
-The committed Firestore and Storage rules scope every journal document and image path to its authenticated owner. Never commit `.env.local`.
+The committed Firestore rules scope every journal document to its authenticated owner. Local image files do not appear on another device and can be lost if browser site data is cleared. Never commit `.env.local`.
 
 ## Run locally
 

@@ -1,6 +1,6 @@
 import { onAuthStateChanged, signInWithPopup, signOut } from "firebase/auth";
 import { firebaseEnabled, auth, googleProvider } from "./firebase.js";
-import { clearCloudJournal, listenToCloudJournal, saveProfile, saveTrade, seedCloudJournal, uploadTradeImages } from "./journal-store.js";
+import { clearCloudJournal, clearLocalImages, listenToCloudJournal, saveLocalTradeImages, saveProfile, saveTrade, seedCloudJournal } from "./journal-store.js";
 
 const bridge = {
   user: null, state: null, renderAll: null, syncSettings: null, toast: null, stopListening: null, syncTimer: null, seeded: false,
@@ -15,8 +15,8 @@ const bridge = {
   },
   queueSync(state) { if (!firebaseEnabled || !this.user) return; window.clearTimeout(this.syncTimer); this.syncTimer = window.setTimeout(() => this.syncNow(state), 350); },
   async syncNow(state = this.state) { if (!firebaseEnabled) { this.toast("Add .env.local Firebase settings to enable cloud sync."); return; } if (!this.user) { this.toast("Sign in to sync this journal and upload images."); return; } try { await saveProfile(this.user.uid, { settings: state.settings, goal: state.goal }); await Promise.all(state.trades.map((trade) => saveTrade(this.user.uid, trade))); this.toast("Journal synced."); } catch (error) { this.toast(`Could not sync: ${error.message}`); } },
-  async uploadImages(tradeDate, files) { if (!firebaseEnabled || !this.user) throw new Error("Sign in to sync before adding images."); return uploadTradeImages(this.user.uid, tradeDate, files, (done, total) => this.toast(`Uploading image ${done} of ${total}…`)); },
-  async clearCloud(trades) { if (!firebaseEnabled || !this.user) return; try { await clearCloudJournal(this.user.uid, trades); } catch (error) { this.toast(`Cloud clear failed: ${error.message}`); throw error; } },
+  async uploadImages(tradeDate, files) { return saveLocalTradeImages(tradeDate, files, (done, total) => this.toast(`Saving image ${done} of ${total} on this device…`)); },
+  async clearCloud(trades) { await clearLocalImages(trades.flatMap((trade) => trade.images || [])); if (!firebaseEnabled || !this.user) return; try { await clearCloudJournal(this.user.uid, trades); } catch (error) { this.toast(`Cloud clear failed: ${error.message}`); throw error; } },
 };
 
 function renderSyncState() { const status = document.querySelector("#sync-status"); const button = document.querySelector("#auth-button"); if (!firebaseEnabled) { status.textContent = "Local-only journal"; button.textContent = "Configure Firebase"; return; } if (!bridge.user) { status.textContent = "Cloud sync available"; button.textContent = "Sign in to sync"; return; } status.textContent = "Cloud sync active"; button.textContent = "Sign out"; }
