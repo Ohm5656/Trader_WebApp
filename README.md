@@ -8,7 +8,7 @@ Tradeboard is an original, browser-first trading journal. It makes daily P&L rev
 
 - A calendar-first journal with positive, negative, empty, and selected daily states.
 - Week, month, year, and all-time views with date navigation.
-- Local trade-entry flow with P&L, trade count, setup, and reflection fields.
+- Local trade-entry flow with P&L, trade count, setup, reflection fields, and image attachments.
 - Performance review: profit/loss split, win rate, profit factor, expectancy, and quick stats.
 - Privacy mode, trade-count control, weekday-only option, goal editing, demo restore, and JSON export.
 - Responsive navigation: desktop icon rail and a compact mobile bottom bar.
@@ -24,19 +24,26 @@ Tradeboard keeps the review loop short. The calendar exposes consistency at a gl
 | UI | HTML5 | Semantic structure, accessible controls, and native dialog. |
 | Styling | CSS3 | Responsive desktop/mobile layouts, visual states, and dark product UI. |
 | Application | Vanilla JavaScript (ES2022) | State, calculations, navigation, rendering, and interactions. |
-| Persistence | `localStorage` | Browser-local journal data and preferences. |
+| Persistence | `localStorage` + IndexedDB | Browser-local journal/preferences plus compressed image attachments. |
 | Verification | Node syntax check + Playwright/Chrome screenshot | Fast implementation checks and visual review. |
 
-## Firebase cloud sync and local images
+## Local-only data model
 
-The app runs local-first until Firebase is configured. With Firebase enabled, users can sign in with Google and migrate their journal to Cloud Firestore. Trade screenshots are compressed and stored in IndexedDB on the current browser, so image attachment works without a billing account.
+Tradeboard intentionally keeps a single user's data in the browser. Trade details and preferences use `localStorage`; screenshots are compressed and stored in IndexedDB. This means the app works offline and requires no account, database, cloud bucket, or billing plan.
 
-1. Copy `.env.example` to `.env.local` and add the Firebase web-app values.
-2. Enable **Google** in Firebase Authentication > Sign-in method.
-3. Create the default Cloud Firestore database, then deploy the included owner-only rules.
-4. Use `npm run build` and `firebase deploy` to publish.
+Data is private to the current browser profile and domain. Export the journal JSON regularly before clearing browser data or moving to a new device. Cloud sync can be added later without changing the journal UI.
 
-The committed Firestore rules scope every journal document to its authenticated owner. Local image files do not appear on another device and can be lost if browser site data is cleared. Never commit `.env.local`.
+## Deploy to Vercel
+
+This is a Vite static app. Import the GitHub repository into Vercel and use:
+
+| Setting | Value |
+| --- | --- |
+| Framework preset | Vite |
+| Build command | `npm run build` |
+| Output directory | `dist` |
+
+No environment variables are required. Note that Vercel gives the app a new browser origin, so existing local data from `localhost` stays on localhost and does not move automatically.
 
 ## Run locally
 
@@ -47,7 +54,7 @@ npm run check
 npm start
 ```
 
-Open the local URL printed by `serve`.
+Open the local URL printed by Vite.
 
 ## Local data model
 

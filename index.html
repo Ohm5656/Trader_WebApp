@@ -26,7 +26,7 @@
       <main class="workspace">
         <header class="workspace-header">
           <div class="identity"><span class="identity-kicker">PRIVATE TRADING JOURNAL</span><strong>Tradeboard</strong></div>
-          <div class="header-actions"><span class="sync-status" id="sync-status">Local-only journal</span><button class="account-control" id="auth-button" type="button">Sign in to sync</button><button class="add-button" id="open-trade-modal" type="button">+ Add entry</button></div>
+          <div class="header-actions"><span class="sync-status">Private to this browser</span><button class="add-button" id="open-trade-modal" type="button">+ Add entry</button></div>
         </header>
 
         <section class="page active-page" id="calendar-page" aria-label="Calendar">
@@ -56,7 +56,7 @@
           <div class="settings-heading"><h1>Settings</h1><p>Edit your journal preferences and manage local data.</p></div>
           <div class="settings-stack">
             <section class="settings-panel"><h2>General</h2><label class="setting-row"><span><b>Show number of trades</b><small>Show daily trade count in calendar views.</small></span><input id="trade-count-toggle" type="checkbox" checked /></label><label class="setting-row"><span><b>Hide P&amp;L for privacy</b><small>Blur results while keeping the journal usable.</small></span><input id="privacy-toggle" type="checkbox" /></label></section>
-            <section class="settings-panel"><h2>Data &amp; sync</h2><button class="settings-action" id="export-json" type="button"><span>Export journal data</span><b>⇩</b></button><button class="settings-action" id="reset-demo" type="button"><span>Restore demo journal</span><b>↺</b></button><button class="settings-action" id="sync-now" type="button"><span>Sync now</span><b>↻</b></button></section>
+            <section class="settings-panel"><h2>Data</h2><button class="settings-action" id="export-json" type="button"><span>Export journal data</span><b>⇩</b></button><button class="settings-action" id="reset-demo" type="button"><span>Restore demo journal</span><b>↺</b></button></section>
             <section class="settings-panel account-panel"><h2>Account</h2><button class="settings-action" type="button"><span>Trading account</span><b>Main account</b></button><button class="settings-action danger" type="button" id="clear-local-data"><span>Clear local journal</span><b>×</b></button></section>
           </div>
         </section>
