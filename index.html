@@ -26,7 +26,7 @@
       <main class="workspace">
         <header class="workspace-header">
           <div class="identity"><span class="identity-kicker">PRIVATE TRADING JOURNAL</span><strong>Tradeboard</strong></div>
-          <div class="header-actions"><button class="account-control" type="button">Main account <span>⌄</span></button><button class="add-button" id="open-trade-modal" type="button">+ Add entry</button></div>
+          <div class="header-actions"><span class="sync-status" id="sync-status">Local-only journal</span><button class="account-control" id="auth-button" type="button">Sign in to sync</button><button class="add-button" id="open-trade-modal" type="button">+ Add entry</button></div>
         </header>
 
         <section class="page active-page" id="calendar-page" aria-label="Calendar">
@@ -56,7 +56,7 @@
           <div class="settings-heading"><h1>Settings</h1><p>Edit your journal preferences and manage local data.</p></div>
           <div class="settings-stack">
             <section class="settings-panel"><h2>General</h2><label class="setting-row"><span><b>Show number of trades</b><small>Show daily trade count in calendar views.</small></span><input id="trade-count-toggle" type="checkbox" checked /></label><label class="setting-row"><span><b>Hide P&amp;L for privacy</b><small>Blur results while keeping the journal usable.</small></span><input id="privacy-toggle" type="checkbox" /></label></section>
-            <section class="settings-panel"><h2>Data</h2><button class="settings-action" id="export-json" type="button"><span>Export journal data</span><b>⇩</b></button><button class="settings-action" id="reset-demo" type="button"><span>Restore demo journal</span><b>↺</b></button></section>
+            <section class="settings-panel"><h2>Data &amp; sync</h2><button class="settings-action" id="export-json" type="button"><span>Export journal data</span><b>⇩</b></button><button class="settings-action" id="reset-demo" type="button"><span>Restore demo journal</span><b>↺</b></button><button class="settings-action" id="sync-now" type="button"><span>Sync now</span><b>↻</b></button></section>
             <section class="settings-panel account-panel"><h2>Account</h2><button class="settings-action" type="button"><span>Trading account</span><b>Main account</b></button><button class="settings-action danger" type="button" id="clear-local-data"><span>Clear local journal</span><b>×</b></button></section>
           </div>
         </section>
@@ -65,8 +65,8 @@
 
     <nav class="mobile-nav" aria-label="Mobile navigation"><button class="mobile-nav-item active" data-page="calendar"><span>▦</span>Calendar</button><button class="mobile-nav-item" data-page="analytics"><span>⌁</span>Analytics</button><button class="mobile-nav-item" data-page="settings"><span>⚙</span>Settings</button></nav>
 
-    <dialog id="trade-modal"><form method="dialog" id="trade-form"><div class="modal-header"><div><p>NEW JOURNAL ENTRY</p><h2>Add a trading day</h2></div><button class="close-modal" value="cancel" aria-label="Close">×</button></div><div class="form-grid"><label>Date<input id="trade-date" name="date" type="date" required /></label><label>Net P&amp;L<input id="trade-pnl" name="pnl" type="number" step="0.01" placeholder="e.g. 125.50" required /></label><label>Number of trades<input id="trade-count" name="count" type="number" min="1" value="1" required /></label><label>Setup / playbook<input id="trade-tag" name="tag" type="text" placeholder="e.g. Opening range" /></label><label class="form-full">Reflection<textarea id="trade-note" name="note" rows="3" placeholder="What will you repeat or change?"></textarea></label></div><div class="modal-actions"><button value="cancel" class="secondary-button">Cancel</button><button value="default" class="add-button">Save entry</button></div></form></dialog>
+    <dialog id="trade-modal"><form method="dialog" id="trade-form"><div class="modal-header"><div><p>NEW JOURNAL ENTRY</p><h2>Add a trading day</h2></div><button class="close-modal" value="cancel" aria-label="Close">×</button></div><div class="form-grid"><label>Date<input id="trade-date" name="date" type="date" required /></label><label>Net P&amp;L<input id="trade-pnl" name="pnl" type="number" step="0.01" placeholder="e.g. 125.50" required /></label><label>Number of trades<input id="trade-count" name="count" type="number" min="1" value="1" required /></label><label>Setup / playbook<input id="trade-tag" name="tag" type="text" placeholder="e.g. Opening range" /></label><label class="form-full">Reflection<textarea id="trade-note" name="note" rows="3" placeholder="What will you repeat or change?"></textarea></label><label class="form-full image-picker"><span>Trade screenshots <small>Optional · images are compressed before cloud upload.</small></span><input id="trade-images" name="images" type="file" accept="image/*" multiple /><output id="image-preview" aria-live="polite"></output></label></div><div class="modal-actions"><button value="cancel" class="secondary-button">Cancel</button><button value="default" class="add-button">Save entry</button></div></form></dialog>
     <div id="toast" role="status" aria-live="polite"></div>
-    <script src="app.js"></script>
+    <script type="module" src="/src/main.js"></script>
   </body>
 </html>

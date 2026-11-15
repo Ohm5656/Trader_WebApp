@@ -2,9 +2,18 @@
   "name": "tradeboard-journal",
   "version": "0.1.0",
   "private": true,
-  "description": "A private, browser-first trading journal dashboard.",
+  "description": "A private, browser-first trading journal with Firebase sync.",
   "scripts": {
-    "start": "npx serve . -l 4173",
-    "check": "node --check app.js"
+    "dev": "vite",
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "node --check src/main.js"
+  },
+  "dependencies": {
+    "firebase": "^12.7.0"
+  },
+  "devDependencies": {
+    "vite": "^7.3.1"
   }
 }

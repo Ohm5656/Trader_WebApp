@@ -1,104 +1,82 @@
 const demoTrades = [
-  { date: "2026-11-09", pnl: 68.28, count: 1, tag: "A+ trend day", note: "Stayed patient for the opening setup." },
-  { date: "2026-11-10", pnl: 95.65, count: 1, tag: "Pullback", note: "Followed the plan and managed risk." },
-  { date: "2026-11-11", pnl: 51.42, count: 1, tag: "Breakout", note: "Took profits at the first target." },
-  { date: "2026-11-13", pnl: -20, count: 1, tag: "Reversal", note: "Stopped out. The setup was early." },
-  { date: "2025-08-18", pnl: -276.85, count: 2, tag: "Review", note: "Historical example." },
+  { date: "2026-11-09", pnl: 68.28, count: 1, tag: "A+ trend day", note: "Stayed patient for the opening setup.", images: [] },
+  { date: "2026-11-10", pnl: 95.65, count: 1, tag: "Pullback", note: "Followed the plan and managed risk.", images: [] },
+  { date: "2026-11-11", pnl: 51.42, count: 1, tag: "Breakout", note: "Took profits at the first target.", images: [] },
+  { date: "2026-11-13", pnl: -20, count: 1, tag: "Reversal", note: "Stopped out. The setup was early.", images: [] },
+  { date: "2025-08-18", pnl: -276.85, count: 2, tag: "Review", note: "Historical example.", images: [] },
 ];
 
-const state = {
-  page: "calendar", view: "month", analyticsScope: "month", cursor: new Date("2026-11-01T12:00:00"),
-  settings: { showCounts: true, weekends: true, privacy: false }, trades: [], goal: 1000,
-};
+const state = { page: "calendar", view: "month", analyticsScope: "month", cursor: new Date("2026-11-01T12:00:00"), settings: { showCounts: true, weekends: true, privacy: false }, trades: [], goal: 1000 };
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
-const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-const daysShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-function initialise() {
-  try { state.trades = JSON.parse(localStorage.getItem("tradeboard-trades")) || structuredClone(demoTrades); } catch { state.trades = structuredClone(demoTrades); }
-  try { Object.assign(state.settings, JSON.parse(localStorage.getItem("tradeboard-settings")) || {}); } catch { /* default settings */ }
-  try { state.goal = Number(localStorage.getItem("tradeboard-goal")) || 1000; } catch { /* default goal */ }
-  bindEvents(); syncSettings(); renderAll();
-}
-function persist() {
-  localStorage.setItem("tradeboard-trades", JSON.stringify(state.trades));
-  localStorage.setItem("tradeboard-settings", JSON.stringify(state.settings));
-  localStorage.setItem("tradeboard-goal", String(state.goal));
-}
-function toKey(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`; }
+function keyFor(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`; }
 function dateAt(year, month, day) { return new Date(year, month, day, 12); }
-function sum(trades) { return trades.reduce((total, trade) => total + Number(trade.pnl), 0); }
-function money(value, includePlus = false) { const number = Number(value); const sign = includePlus && number >= 0 ? "+" : number < 0 ? "-" : ""; return `${sign}$${Math.abs(number).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; }
-function getTrade(key) { return state.trades.find((trade) => trade.date === key); }
-function monthTrades(date = state.cursor) { return state.trades.filter((trade) => { const d = new Date(`${trade.date}T12:00:00`); return d.getFullYear() === date.getFullYear() && d.getMonth() === date.getMonth(); }); }
+function escapeHtml(value = "") { return String(value).replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]); }
+function money(value, plus = false) { const amount = Number(value) || 0; return `${plus && amount >= 0 ? "+" : amount < 0 ? "-" : ""}$${Math.abs(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; }
+function sum(entries) { return entries.reduce((total, entry) => total + Number(entry.pnl || 0), 0); }
+function findTrade(date) { return state.trades.find((trade) => trade.date === date); }
+function monthTrades(date = state.cursor) { return state.trades.filter((trade) => { const value = new Date(`${trade.date}T12:00:00`); return value.getFullYear() === date.getFullYear() && value.getMonth() === date.getMonth(); }); }
 function yearTrades(year = state.cursor.getFullYear()) { return state.trades.filter((trade) => new Date(`${trade.date}T12:00:00`).getFullYear() === year); }
-function visibleEntries() { if (state.view === "all") return state.trades; if (state.view === "year") return yearTrades(); if (state.view === "week") { const start = startOfWeek(state.cursor); const end = new Date(start); end.setDate(end.getDate() + 6); return state.trades.filter((trade) => { const date = new Date(`${trade.date}T12:00:00`); return date >= start && date <= end; }); } return monthTrades(); }
+function startOfWeek(date) { const result = new Date(date); result.setDate(result.getDate() - ((result.getDay() + 6) % 7)); return dateAt(result.getFullYear(), result.getMonth(), result.getDate()); }
+function visibleTrades() { if (state.view === "all") return state.trades; if (state.view === "year") return yearTrades(); if (state.view === "week") { const start = startOfWeek(state.cursor); const end = new Date(start); end.setDate(end.getDate() + 6); return state.trades.filter((trade) => { const date = new Date(`${trade.date}T12:00:00`); return date >= start && date <= end; }); } return monthTrades(); }
+function persist() { localStorage.setItem("tradeboard-trades", JSON.stringify(state.trades)); localStorage.setItem("tradeboard-settings", JSON.stringify(state.settings)); localStorage.setItem("tradeboard-goal", String(state.goal)); window.tradeboardCloud?.queueSync(state); }
 
 function renderAll() { renderCalendar(); renderAnalytics(); document.body.classList.toggle("privacy", state.settings.privacy); }
 function renderCalendar() {
-  const entries = visibleEntries(); const total = sum(entries); const isAll = state.view === "all";
-  const title = state.view === "week" ? weekTitle() : state.view === "month" ? `${monthNames[state.cursor.getMonth()]} ${state.cursor.getFullYear()}` : state.view === "year" ? String(state.cursor.getFullYear()) : "All trading history";
+  const entries = visibleTrades(); const total = sum(entries); const goal = state.view === "year" ? state.goal * 12 : state.goal;
+  const title = state.view === "week" ? weekTitle() : state.view === "month" ? `${months[state.cursor.getMonth()]} ${state.cursor.getFullYear()}` : state.view === "year" ? state.cursor.getFullYear() : "All trading history";
   $("#period-title").textContent = title;
-  $("#month-total").textContent = money(total);
-  $("#month-total").classList.toggle("negative", total < 0);
-  $("#month-trades").textContent = `${entries.length} trading ${entries.length === 1 ? "day" : "days"}`;
-  $("#goal-label").textContent = state.view === "year" ? "Yearly goal" : "Monthly goal";
-  $("#goal-current").textContent = money(total);
-  $("#goal-target").textContent = money(state.view === "year" ? state.goal * 12 : state.goal);
-  const goal = state.view === "year" ? state.goal * 12 : state.goal;
-  $("#goal-progress").style.width = `${Math.max(0, Math.min(100, total / goal * 100))}%`;
-  $("#calendar-page").classList.toggle("is-week", state.view === "week");
-  $("#calendar-page").classList.toggle("is-all", isAll);
+  $("#month-total").textContent = money(total); $("#month-total").classList.toggle("negative", total < 0); $("#month-trades").textContent = `${entries.length} trading ${entries.length === 1 ? "day" : "days"}`;
+  $("#goal-label").textContent = state.view === "year" ? "Yearly goal" : "Monthly goal"; $("#goal-current").textContent = money(total); $("#goal-target").textContent = money(goal); $("#goal-progress").style.width = `${Math.max(0, Math.min(100, total / goal * 100))}%`;
+  $("#calendar-page").classList.toggle("is-week", state.view === "week"); $("#calendar-page").classList.toggle("is-all", state.view === "all");
   $$(".view-tab").forEach((tab) => { const active = tab.dataset.view === state.view; tab.classList.toggle("active", active); tab.setAttribute("aria-selected", String(active)); });
   $("#calendar-content").innerHTML = state.view === "month" ? monthView() : state.view === "week" ? weekView() : state.view === "year" ? yearView() : allTimeView();
 }
 function monthView() {
   const year = state.cursor.getFullYear(); const month = state.cursor.getMonth(); const first = dateAt(year, month, 1); const lastDay = dateAt(year, month + 1, 0).getDate();
-  const days = state.settings.weekends ? daysShort.slice(1).concat("Sun") : daysShort.slice(1, 6);
-  const columnCount = days.length; const mondayIndex = (first.getDay() + 6) % 7; let cells = "";
-  for (let i = 0; i < mondayIndex; i += 1) cells += '<div class="calendar-day blank"></div>';
+  const showWeekends = state.settings.weekends; const dayHeaders = showWeekends ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] : ["Mon", "Tue", "Wed", "Thu", "Fri"];
+  const firstIndex = (first.getDay() + 6) % 7; let cells = "";
+  for (let index = 0; index < firstIndex; index += 1) cells += '<div class="calendar-day blank"></div>';
   for (let day = 1; day <= lastDay; day += 1) {
-    const date = dateAt(year, month, day); const key = toKey(date); const trade = getTrade(key); const weekend = date.getDay() === 0 || date.getDay() === 6;
-    if (!state.settings.weekends && weekend) continue;
-    const status = trade ? (trade.pnl >= 0 ? "win" : "loss") : ""; const selected = key === "2026-11-15" ? "selected" : "";
-    cells += `<button class="calendar-day ${status} ${selected}" data-trade-date="${key}" aria-label="${key}${trade ? ` ${money(trade.pnl)}` : " no trade"}"><span>${day}</span>${trade ? `<strong>${money(trade.pnl, true)}</strong><small>${state.settings.showCounts ? `${trade.count} ${trade.count === 1 ? "trade" : "trades"}` : trade.tag}</small>` : "<b>—</b>"}</button>`;
+    const date = dateAt(year, month, day); const key = keyFor(date); const trade = findTrade(key); const weekend = date.getDay() === 0 || date.getDay() === 6;
+    if (!showWeekends && weekend) continue;
+    const outcome = trade ? (trade.pnl >= 0 ? "win" : "loss") : ""; const selected = key === "2026-11-15" ? "selected" : "";
+    const body = trade ? `<strong>${money(trade.pnl, true)}</strong><small>${state.settings.showCounts ? `${trade.count} ${trade.count === 1 ? "trade" : "trades"}` : escapeHtml(trade.tag)}</small>` : "<b>&mdash;</b>";
+    cells += `<button class="calendar-day ${outcome} ${selected}" data-trade-date="${key}" aria-label="${key}"><span>${day}</span>${body}</button>`;
   }
-  return `<div class="calendar-weekdays columns-${columnCount}">${days.map((day) => `<span>${day}</span>`).join("")}</div><div class="month-grid columns-${columnCount}">${cells}</div>`;
+  return `<div class="calendar-weekdays columns-${dayHeaders.length}">${dayHeaders.map((day) => `<span>${day}</span>`).join("")}</div><div class="month-grid columns-${dayHeaders.length}">${cells}</div>`;
 }
-function startOfWeek(date) { const copy = new Date(date); copy.setDate(copy.getDate() - ((copy.getDay() + 6) % 7)); return dateAt(copy.getFullYear(), copy.getMonth(), copy.getDate()); }
-function weekTitle() { const start = startOfWeek(state.cursor); const end = new Date(start); end.setDate(end.getDate() + 6); return `${monthNames[start.getMonth()].slice(0, 3)} ${start.getDate()} – ${monthNames[end.getMonth()].slice(0, 3)} ${end.getDate()}, ${end.getFullYear()}`; }
-function weekView() { const start = startOfWeek(state.cursor); return `<div class="week-list">${Array.from({ length: 7 }, (_, index) => { const date = new Date(start); date.setDate(start.getDate() + index); const key = toKey(date); const trade = getTrade(key); const direction = trade ? (trade.pnl >= 0 ? "↗" : "↘") : "—"; return `<button class="week-row ${trade?.pnl < 0 ? "loss-row" : ""}" data-trade-date="${key}"><span class="week-date">${date.getDate()}<small>${daysShort[date.getDay()]}</small></span><strong>${trade ? money(trade.pnl, true) : "–"}</strong><span class="week-trade-count">${trade && state.settings.showCounts ? `${trade.count} ${trade.count === 1 ? "trade" : "trades"}` : ""}</span><b class="week-direction">${direction}</b></button>`; }).join("")}</div>`; }
-function miniSquares(entries) { const byDate = new Map(entries.map((entry) => [entry.date, entry])); const squares = []; for (let index = 0; index < 35; index += 1) { const entry = byDate.get([...byDate.keys()][index]); squares.push(`<i class="${entry ? (entry.pnl >= 0 ? "gain" : "loss") : ""}"></i>`); } return squares.join(""); }
-function yearView() { const year = state.cursor.getFullYear(); return `<div class="year-grid">${monthNames.map((name, month) => { const entries = state.trades.filter((trade) => { const date = new Date(`${trade.date}T12:00:00`); return date.getFullYear() === year && date.getMonth() === month; }); const total = sum(entries); return `<button class="mini-month" data-month="${month}" aria-label="View ${name}"><span>${name.slice(0, 3)}</span><div class="mini-squares">${miniSquares(entries)}</div><strong class="${total < 0 ? "negative" : ""}">${money(total)}</strong></button>`; }).join("")}</div>`; }
-function allTimeView() { const years = [...new Set(state.trades.map((trade) => new Date(`${trade.date}T12:00:00`).getFullYear()))].sort((a, b) => b - a); const total = sum(state.trades); const best = Math.max(...state.trades.map((trade) => trade.pnl)); const worst = Math.min(...state.trades.map((trade) => trade.pnl)); return `<div class="all-time-content"><div class="all-list">${years.map((year) => { const totalForYear = sum(yearTrades(year)); return `<button class="all-row ${totalForYear < 0 ? "negative" : ""}" data-year="${year}"><span>${year}</span><b>${money(totalForYear)}</b></button>`; }).join("")}</div><article class="quick-stats"><h2>Quick stats</h2><dl><div><dt>Daily average P&amp;L</dt><dd class="${total < 0 ? "negative" : ""}">${money(total / state.trades.length)}</dd></div><div><dt>Highest profit</dt><dd>${money(best)}</dd></div><div><dt>Highest loss</dt><dd class="negative">${money(worst)}</dd></div><div><dt>Trading days</dt><dd>${state.trades.length}</dd></div></dl><button data-page="analytics">See detailed analytics →</button></article></div>`; }
+function weekTitle() { const start = startOfWeek(state.cursor); const end = new Date(start); end.setDate(end.getDate() + 6); return `${months[start.getMonth()].slice(0, 3)} ${start.getDate()} &ndash; ${months[end.getMonth()].slice(0, 3)} ${end.getDate()}, ${end.getFullYear()}`; }
+function weekView() { const start = startOfWeek(state.cursor); return `<div class="week-list">${Array.from({ length: 7 }, (_, index) => { const date = new Date(start); date.setDate(start.getDate() + index); const key = keyFor(date); const trade = findTrade(key); return `<button class="week-row ${trade?.pnl < 0 ? "loss-row" : ""}" data-trade-date="${key}"><span class="week-date">${date.getDate()}<small>${weekdays[date.getDay()]}</small></span><strong>${trade ? money(trade.pnl, true) : "&ndash;"}</strong><span class="week-trade-count">${trade && state.settings.showCounts ? `${trade.count} ${trade.count === 1 ? "trade" : "trades"}` : ""}</span><b class="week-direction">${trade ? (trade.pnl >= 0 ? "&#8599;" : "&#8600;") : "&mdash;"}</b></button>`; }).join("")}</div>`; }
+function miniSquares(entries) { const outcome = entries.map((entry) => entry.pnl >= 0 ? "gain" : "loss"); return Array.from({ length: 35 }, (_, index) => `<i class="${outcome[index] || ""}"></i>`).join(""); }
+function yearView() { const year = state.cursor.getFullYear(); return `<div class="year-grid">${months.map((name, month) => { const entries = state.trades.filter((trade) => { const date = new Date(`${trade.date}T12:00:00`); return date.getFullYear() === year && date.getMonth() === month; }); const total = sum(entries); return `<button class="mini-month" data-month="${month}"><span>${name.slice(0, 3)}</span><div class="mini-squares">${miniSquares(entries)}</div><strong class="${total < 0 ? "negative" : ""}">${money(total)}</strong></button>`; }).join("")}</div>`; }
+function allTimeView() { const years = [...new Set(state.trades.map((trade) => new Date(`${trade.date}T12:00:00`).getFullYear()))].sort((a, b) => b - a); const total = sum(state.trades); const best = state.trades.length ? Math.max(...state.trades.map((trade) => trade.pnl)) : 0; const worst = state.trades.length ? Math.min(...state.trades.map((trade) => trade.pnl)) : 0; return `<div class="all-time-content"><div class="all-list">${years.map((year) => { const yearTotal = sum(yearTrades(year)); return `<button class="all-row ${yearTotal < 0 ? "negative" : ""}" data-year="${year}"><span>${year}</span><b>${money(yearTotal)}</b></button>`; }).join("") || '<p class="empty-state">No trading days saved yet.</p>'}</div><article class="quick-stats"><h2>Quick stats</h2><dl><div><dt>Daily average P&amp;L</dt><dd class="${total < 0 ? "negative" : ""}">${money(state.trades.length ? total / state.trades.length : 0)}</dd></div><div><dt>Highest profit</dt><dd>${money(best)}</dd></div><div><dt>Highest loss</dt><dd class="negative">${money(worst)}</dd></div><div><dt>Trading days</dt><dd>${state.trades.length}</dd></div></dl><button data-page="analytics">See detailed analytics &rarr;</button></article></div>`; }
+function renderAnalytics() { const entries = state.analyticsScope === "all" ? state.trades : monthTrades(); const wins = entries.filter((entry) => entry.pnl > 0); const losses = entries.filter((entry) => entry.pnl < 0); const profit = sum(wins); const loss = Math.abs(sum(losses)); const rate = entries.length ? Math.round(wins.length / entries.length * 100) : 0; const net = sum(entries); $("#analytics-range").innerHTML = `${state.analyticsScope === "all" ? "All time" : "This month"} <span>&#8964;</span>`; $("#analytics-content").innerHTML = `<section class="profit-card"><div class="profit-heading"><div><h1>Profit and Loss</h1><p>Total profit: <b>${money(profit)}</b></p><p>Total loss: <em>${money(-loss)}</em></p></div><button type="button" id="toggle-analytics-details">Details &#8964;</button></div><div class="donut-layout"><div class="donut" style="--share:${rate * 3.6}deg"><div><strong>${rate}%</strong><small>profitable</small></div></div><div class="donut-legend"><span><i></i>Profit <b>${money(profit)}</b></span><span><i class="red"></i>Loss <b>${money(-loss)}</b></span><span>Profit factor <b>${loss ? (profit / loss).toFixed(2) : "&mdash;"}</b></span></div></div><div class="analytics-details" id="analytics-details"><div><span>Net P&amp;L</span><b class="${net < 0 ? "negative" : ""}">${money(net)}</b></div><div><span>Expectancy</span><b class="${net < 0 ? "negative" : ""}">${money(entries.length ? net / entries.length : 0)}</b></div><div><span>Trading days</span><b>${entries.length}</b></div></div></section>`; }
 
-function renderAnalytics() {
-  const entries = state.analyticsScope === "all" ? state.trades : monthTrades(); const wins = entries.filter((entry) => entry.pnl > 0); const losses = entries.filter((entry) => entry.pnl < 0); const grossProfit = sum(wins); const grossLoss = Math.abs(sum(losses)); const rate = entries.length ? Math.round(wins.length / entries.length * 100) : 0; const factor = grossLoss ? (grossProfit / grossLoss).toFixed(2) : "—"; const net = sum(entries);
-  $("#analytics-range").innerHTML = `${state.analyticsScope === "all" ? "All time" : "This month"} <span>⌄</span>`;
-  $("#analytics-content").innerHTML = `<section class="profit-card"><div class="profit-heading"><div><h1>Profit and Loss</h1><p>Total profit: <b>${money(grossProfit)}</b></p><p>Total loss: <em>${money(-grossLoss)}</em></p></div><button type="button" id="toggle-analytics-details">Details⌄</button></div><div class="donut-layout"><div class="donut" style="--share:${rate * 3.6}deg"><div><strong>${rate}%</strong><small>profitable</small></div></div><div class="donut-legend"><span><i></i>Profit <b>${money(grossProfit)}</b></span><span><i class="red"></i>Loss <b>${money(-grossLoss)}</b></span><span>Profit factor <b>${factor}</b></span></div></div><div class="analytics-details" id="analytics-details"><div><span>Net P&amp;L</span><b class="${net < 0 ? "negative" : ""}">${money(net)}</b></div><div><span>Expectancy</span><b class="${net < 0 ? "negative" : ""}">${money(entries.length ? net / entries.length : 0)}</b></div><div><span>Trading days</span><b>${entries.length}</b></div></div></section>`;
-}
-function showPage(page) { state.page = page; $$(".page").forEach((section) => section.classList.toggle("active-page", section.id === `${page}-page`)); $$('[data-page]').forEach((item) => item.classList.toggle("active", item.dataset.page === page)); }
-function changePeriod(offset) { if (state.view === "all") return; const next = new Date(state.cursor); if (state.view === "week") next.setDate(next.getDate() + offset * 7); else if (state.view === "year") next.setFullYear(next.getFullYear() + offset); else next.setMonth(next.getMonth() + offset); state.cursor = next; renderAll(); }
-function toast(message) { const box = $("#toast"); box.textContent = message; box.classList.add("show"); setTimeout(() => box.classList.remove("show"), 2600); }
+function toast(message) { const target = $("#toast"); target.textContent = message; target.classList.add("show"); window.setTimeout(() => target.classList.remove("show"), 2800); }
 function syncSettings() { $("#trade-count-toggle").checked = state.settings.showCounts; $("#privacy-toggle").checked = state.settings.privacy; $("#weekends-toggle-button b").textContent = state.settings.weekends ? "ON" : "OFF"; }
-function openModal() { $("#trade-date").value = toKey(state.cursor); $("#trade-modal").showModal(); }
-function exportJournal() { const body = JSON.stringify({ exportedAt: new Date().toISOString(), trades: state.trades }, null, 2); const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([body], { type: "application/json" })); link.download = "tradeboard-journal.json"; link.click(); URL.revokeObjectURL(link.href); toast("Journal export is ready."); }
+function showPage(page) { state.page = page; $$(".page").forEach((item) => item.classList.toggle("active-page", item.id === `${page}-page`)); $$('[data-page]').forEach((item) => item.classList.toggle("active", item.dataset.page === page)); }
+function renderImagePreview(files) { $("#image-preview").innerHTML = [...files].map((file) => `<span>${escapeHtml(file.name)}</span>`).join(""); }
+function openModal() { $("#trade-date").value = keyFor(state.cursor); $("#trade-images").value = ""; renderImagePreview([]); $("#trade-modal").showModal(); }
+function exportJournal() { const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), trades: state.trades }, null, 2)], { type: "application/json" })); link.download = "tradeboard-journal.json"; link.click(); URL.revokeObjectURL(link.href); toast("Journal export is ready."); }
+function changePeriod(offset) { if (state.view === "all") return; const next = new Date(state.cursor); if (state.view === "week") next.setDate(next.getDate() + offset * 7); else if (state.view === "year") next.setFullYear(next.getFullYear() + offset); else next.setMonth(next.getMonth() + offset); state.cursor = next; renderAll(); }
+
 function bindEvents() {
-  $$('[data-page]').forEach((button) => button.addEventListener("click", () => showPage(button.dataset.page)));
-  $$(".view-tab").forEach((button) => button.addEventListener("click", () => { state.view = button.dataset.view; renderCalendar(); }));
+  $$('[data-page]').forEach((item) => item.addEventListener("click", () => showPage(item.dataset.page)));
+  $$(".view-tab").forEach((item) => item.addEventListener("click", () => { state.view = item.dataset.view; renderCalendar(); }));
   $("#previous-period").addEventListener("click", () => changePeriod(-1)); $("#next-period").addEventListener("click", () => changePeriod(1));
-  $("#calendar-content").addEventListener("click", (event) => { const entry = event.target.closest("[data-trade-date]"); const month = event.target.closest("[data-month]"); const year = event.target.closest("[data-year]"); if (entry) { const trade = getTrade(entry.dataset.tradeDate); toast(trade ? `${money(trade.pnl, true)} · ${trade.tag || "Journal entry"}` : "No entry logged for this day."); } if (month) { state.cursor = dateAt(state.cursor.getFullYear(), Number(month.dataset.month), 1); state.view = "month"; renderCalendar(); } if (year) { state.cursor = dateAt(Number(year.dataset.year), 0, 1); state.view = "year"; renderCalendar(); } });
-  $("#open-trade-modal").addEventListener("click", openModal); $("#trade-form").addEventListener("submit", (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); const date = String(form.get("date")); state.trades = state.trades.filter((trade) => trade.date !== date); state.trades.push({ date, pnl: Number(form.get("pnl")), count: Number(form.get("count")), tag: String(form.get("tag")).trim(), note: String(form.get("note")).trim() }); state.trades.sort((a, b) => a.date.localeCompare(b.date)); state.cursor = new Date(`${date}T12:00:00`); persist(); $("#trade-modal").close(); renderAll(); toast("Trading day saved."); });
-  $("#analytics-range").addEventListener("click", () => { state.analyticsScope = state.analyticsScope === "all" ? "month" : "all"; renderAnalytics(); });
-  $("#analytics-content").addEventListener("click", (event) => { if (event.target.closest("#toggle-analytics-details")) $("#analytics-details").classList.toggle("open"); });
-  $("#weekends-toggle-button").addEventListener("click", () => { state.settings.weekends = !state.settings.weekends; persist(); syncSettings(); renderCalendar(); });
-  $("#trade-count-toggle").addEventListener("change", (event) => { state.settings.showCounts = event.target.checked; persist(); renderCalendar(); });
-  $("#privacy-toggle").addEventListener("change", (event) => { state.settings.privacy = event.target.checked; persist(); renderAll(); });
-  $("#export-json").addEventListener("click", exportJournal); $("#export-rail").addEventListener("click", exportJournal);
-  $("#reset-demo").addEventListener("click", () => { state.trades = structuredClone(demoTrades); persist(); renderAll(); toast("Demo journal restored."); });
-  $("#clear-local-data").addEventListener("click", () => { if (window.confirm("Clear locally stored Tradeboard entries?")) { state.trades = []; persist(); renderAll(); toast("Local journal cleared."); } });
-  $("#edit-goal").addEventListener("click", () => { const next = window.prompt("Set your monthly goal", String(state.goal)); if (next !== null && Number(next) > 0) { state.goal = Number(next); persist(); renderCalendar(); toast("Monthly goal updated."); } });
+  $("#calendar-content").addEventListener("click", (event) => { const tradeTarget = event.target.closest("[data-trade-date]"); const monthTarget = event.target.closest("[data-month]"); const yearTarget = event.target.closest("[data-year]"); const pageTarget = event.target.closest("[data-page]"); if (tradeTarget) { const trade = findTrade(tradeTarget.dataset.tradeDate); toast(trade ? `${money(trade.pnl, true)} · ${trade.tag || "Journal entry"}${trade.images?.length ? ` · ${trade.images.length} image${trade.images.length === 1 ? "" : "s"}` : ""}` : "No entry logged for this day."); } if (monthTarget) { state.cursor = dateAt(state.cursor.getFullYear(), Number(monthTarget.dataset.month), 1); state.view = "month"; renderCalendar(); } if (yearTarget) { state.cursor = dateAt(Number(yearTarget.dataset.year), 0, 1); state.view = "year"; renderCalendar(); } if (pageTarget) showPage(pageTarget.dataset.page); });
+  $("#open-trade-modal").addEventListener("click", openModal); $("#trade-images").addEventListener("change", (event) => renderImagePreview(event.target.files));
+  $("#trade-form").addEventListener("submit", async (event) => { event.preventDefault(); const form = new FormData(event.currentTarget); const date = String(form.get("date")); const existing = findTrade(date); let images = existing?.images || []; try { const files = $("#trade-images").files; if (files.length) { toast(`Uploading ${files.length} image${files.length === 1 ? "" : "s"}…`); images = [...images, ...await window.tradeboardCloud.uploadImages(date, files)]; } state.trades = state.trades.filter((trade) => trade.date !== date); state.trades.push({ date, pnl: Number(form.get("pnl")), count: Number(form.get("count")), tag: String(form.get("tag")).trim(), note: String(form.get("note")).trim(), images }); state.trades.sort((a, b) => a.date.localeCompare(b.date)); state.cursor = new Date(`${date}T12:00:00`); persist(); $("#trade-modal").close(); renderAll(); toast("Trading day saved."); } catch (error) { toast(error.message || "Could not save the image."); } });
+  $("#analytics-range").addEventListener("click", () => { state.analyticsScope = state.analyticsScope === "all" ? "month" : "all"; renderAnalytics(); }); $("#analytics-content").addEventListener("click", (event) => { if (event.target.closest("#toggle-analytics-details")) $("#analytics-details").classList.toggle("open"); });
+  $("#weekends-toggle-button").addEventListener("click", () => { state.settings.weekends = !state.settings.weekends; persist(); syncSettings(); renderCalendar(); }); $("#trade-count-toggle").addEventListener("change", (event) => { state.settings.showCounts = event.target.checked; persist(); renderCalendar(); }); $("#privacy-toggle").addEventListener("change", (event) => { state.settings.privacy = event.target.checked; persist(); renderAll(); });
+  $("#export-json").addEventListener("click", exportJournal); $("#export-rail").addEventListener("click", exportJournal); $("#sync-now").addEventListener("click", () => window.tradeboardCloud.syncNow(state));
+  $("#reset-demo").addEventListener("click", () => { state.trades = structuredClone(demoTrades); persist(); renderAll(); toast("Demo journal restored."); }); $("#clear-local-data").addEventListener("click", async () => { if (window.confirm("Clear this journal on this device and any connected cloud account?")) { await window.tradeboardCloud.clearCloud(state.trades); state.trades = []; persist(); renderAll(); toast("Journal cleared."); } });
+  $("#edit-goal").addEventListener("click", () => { const goal = window.prompt("Set your monthly goal", String(state.goal)); if (goal !== null && Number(goal) > 0) { state.goal = Number(goal); persist(); renderCalendar(); toast("Monthly goal updated."); } });
 }
 
+function initialise() { try { state.trades = JSON.parse(localStorage.getItem("tradeboard-trades")) || structuredClone(demoTrades); } catch { state.trades = structuredClone(demoTrades); } try { Object.assign(state.settings, JSON.parse(localStorage.getItem("tradeboard-settings")) || {}); } catch { /* default settings */ } try { state.goal = Number(localStorage.getItem("tradeboard-goal")) || 1000; } catch { /* default goal */ } bindEvents(); syncSettings(); renderAll(); window.tradeboardCloud?.connect({ state, renderAll, syncSettings, toast }); }
 initialise();
